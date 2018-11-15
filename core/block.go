@@ -16,6 +16,31 @@ type Block struct {
 	Nonce         int    //用于验证工作量证明的随机数
 }
 
+// 定义一个新区快并返回
+func NewBlock(data string, prevBlockHash []byte) *Block {
+	//声明一个区块（Block结构体）
+	block := &Block{
+		Timestamp:     time.Now().Unix(),
+		Data:          []byte(data),
+		PrevBlockHash: prevBlockHash,
+		Hash:          []byte{},
+		}
+
+	//进行一次PoW计算（挖矿）
+	pow := NewProofOfWork(block)
+	nonce, hash := pow.Run()
+	//将计算得到的哈希和随机数保存为区块数据
+	block.Hash = hash[:]
+	block.Nonce = nonce
+	
+	return block
+}
+
+// 创世纪区块的创建
+func NewGenesisBlock() *Block {
+	return NewBlock("Genesis Block", []byte{})
+}
+
 //编码区块数据为字节数组
 func (b *Block) Serialize() []byte{
 	var result bytes.Buffer
@@ -28,6 +53,7 @@ func (b *Block) Serialize() []byte{
 	return result.Bytes()
 }
 
+//反编码字节数组到区块数据
 func DeserializeBlock(d []byte) *Block {
 	var block Block
 
@@ -37,35 +63,4 @@ func DeserializeBlock(d []byte) *Block {
 		log.Panic(err)
 	}
 	return &block
-}
-
-// 新区快的创建
-func NewBlock(data string, prevBlockHash []byte) *Block {
-	block := &Block{
-		Timestamp:     time.Now().Unix(),
-		Data:          []byte(data),
-		PrevBlockHash: prevBlockHash,
-		Hash:          []byte{},
-		}
-	pow :=NewProofOfWork(block)
-	nonce, hash := pow.Run()
-	
-	block.Hash = hash[:]
-	block.Nonce = nonce
-	
-	return block
-}
-
-/* 计算并设置哈希值
-func (b *Block) SetHash() {
-	timestamp := []byte(strconv.FormatInt(b.Timestamp, 10))
-	headers := bytes.Join([][]byte{b.PrevBlockHash, b.Data, timestamp}, []byte{})
-	hash := sha256.Sum256(headers)
-	b.Hash = hash[:]
-}
-*/
-
-// 创世纪区块的创建
-func NewGenesisBlock() *Block {
-	return NewBlock("Genesis Block", []byte{})
 }
