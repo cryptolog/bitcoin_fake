@@ -27,6 +27,7 @@ func (bc *Blockchain) AddBlock(data string) {
 	var lastHash []byte
 
 	err := bc.Db.View(func(tx *bolt.Tx) error {
+		//打开blocksBucket = "blocks"的桶
 		b := tx.Bucket([]byte(blocksBucket))
 		//获取key为‘l(ast)’的区块哈希
 		lastHash = b.Get([]byte("l"))
@@ -132,7 +133,7 @@ func NewBlockchain() *Blockchain {
 		log.Panic(err)
 	}
 
-	//tip现在是最新区块的数据，db为更新后的bolt“数据库”
+	//tip现在是最新区块的哈希，db为更新后的bolt“数据库”
 	bc := Blockchain{tip,db}
 	return &bc
 }
